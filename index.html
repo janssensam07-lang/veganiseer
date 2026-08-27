@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veganiseer — Maak elk recept veganistisch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo">
+    <span class="logo-mark">🌱</span>
+    <span class="logo-text">Veganiseer</span>
+  </div>
+</header>
+
+<main id="app">
+
+  <!-- SCHERM 1: INVOER -->
+  <section id="screen-input" class="screen active">
+    <div class="container">
+      <h1>Van elk recept een veganistisch meesterwerk</h1>
+      <p class="subtitle">Plak je recept en Veganiseer bedenkt inventieve vervangingen: geen weglaten, maar herontwerpen.</p>
+
+      <div class="input-card">
+        <div class="input-tabs">
+          <button class="tab-btn active" data-tab="text">Tekst</button>
+          <button class="tab-btn" data-tab="link" disabled title="Binnenkort beschikbaar">Link</button>
+          <button class="tab-btn" data-tab="photo" disabled title="Binnenkort beschikbaar">Foto</button>
+        </div>
+
+        <textarea id="recipe-input" placeholder="Plak hier je recept, bijvoorbeeld:
+
+Pasta Carbonara
+Ingrediënten:
+- 400g spaghetti
+- 200g pancetta
+- 4 eierdooiers
+- 100g Parmezaanse kaas, geraspt
+- Zwarte peper
+
+Bereiding:
+1. Kook de spaghetti al dente.
+2. Bak de pancetta krokant.
+3. Meng eierdooiers met Parmezaan.
+..."></textarea>
+
+        <div class="input-actions">
+          <button class="btn-secondary" disabled title="Binnenkort beschikbaar">
+            <span class="btn-icon">🔗</span> Link plakken
+          </button>
+          <button class="btn-secondary" disabled title="Binnenkort beschikbaar">
+            <span class="btn-icon">📷</span> Foto uploaden
+          </button>
+        </div>
+
+        <button id="veganize-btn" class="btn-primary">Veganiseer dit recept</button>
+        <button id="demo-btn" class="btn-text">Of bekijk een voorbeeld (Pasta Carbonara) →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCHERM 2: LADEN -->
+  <section id="screen-loading" class="screen">
+    <div class="container loading-container">
+      <div class="loader">
+        <div class="loader-ring"></div>
+        <span class="loader-emoji">🌿</span>
+      </div>
+      <p id="loading-text" class="loading-text">Recept wordt geanalyseerd...</p>
+    </div>
+  </section>
+
+  <!-- SCHERM 3: RESULTAAT -->
+  <section id="screen-result" class="screen">
+    <div class="container container-wide">
+      <div class="result-header">
+        <h1 id="result-title">Pasta Carbonara — Veganistisch</h1>
+        <button id="restart-btn" class="btn-text">← Nieuw recept</button>
+      </div>
+
+      <div class="compare-grid">
+        <div class="recipe-col original">
+          <div class="col-label">Origineel</div>
+          <h2 id="orig-name">Pasta Carbonara</h2>
+          <h3>Ingrediënten</h3>
+          <ul id="orig-ingredients" class="ingredient-list"></ul>
+          <h3>Bereiding</h3>
+          <ol id="orig-steps" class="step-list"></ol>
+        </div>
+
+        <div class="recipe-col vegan">
+          <div class="col-label">Veganistisch</div>
+          <h2 id="vegan-name">Pasta Carbonara</h2>
+          <h3>Ingrediënten</h3>
+          <ul id="vegan-ingredients" class="ingredient-list"></ul>
+          <h3>Bereiding</h3>
+          <ol id="vegan-steps" class="step-list"></ol>
+        </div>
+      </div>
+
+      <div class="replacements-section">
+        <h2>De vervangingen uitgelegd</h2>
+        <div id="replacements-list" class="replacements-list"></div>
+      </div>
+
+      <div class="impact-section">
+        <h2>Ecologische impact</h2>
+        <p class="impact-note">Placeholder-vergelijking — wordt in een latere fase gevuld met echte CO2-data.</p>
+        <div class="impact-bars">
+          <div class="impact-row">
+            <div class="impact-label">Origineel</div>
+            <div class="impact-bar-track">
+              <div class="impact-bar original-bar" style="width: 100%">
+                <span class="impact-value">6,8 kg CO₂e</span>
+              </div>
+            </div>
+          </div>
+          <div class="impact-row">
+            <div class="impact-label">Veganistisch</div>
+            <div class="impact-bar-track">
+              <div class="impact-bar vegan-bar" style="width: 26%">
+                <span class="impact-value">1,8 kg CO₂e</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="impact-savings">🌍 Je bespaart <strong>5,0 kg CO₂e</strong> per portie — vergelijkbaar met <strong>25 km</strong> autorijden.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>Veganiseer · gemaakt met 🌱 · fase 1 (statische demo)</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
