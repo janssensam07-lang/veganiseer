@@ -1,0 +1,11 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Standaard alles dicht: alleen de Firebase Functions (Admin SDK)
+    // mogen lezen/schrijven. Later verruimen als er user-auth bijkomt.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
