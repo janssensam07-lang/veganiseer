@@ -6,7 +6,7 @@
 <title>Veganiseer — Maak elk recept veganistisch</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,6 +16,16 @@
     <span class="logo-mark">🌱</span>
     <span class="logo-text">Veganiseer</span>
   </div>
+  <div class="gamification-bar">
+    <span class="stat-pill streak-pill" title="Dagen op rij">
+      <span class="stat-icon">🔥</span>
+      <span id="stat-streak">0</span>
+    </span>
+    <span class="stat-pill xp-pill" title="XP">
+      <span class="stat-icon">⭐</span>
+      <span id="stat-xp">0</span>
+    </span>
+  </div>
 </header>
 
 <main id="app">
@@ -23,6 +33,23 @@
   <!-- SCHERM 1: INVOER -->
   <section id="screen-input" class="screen active">
     <div class="container">
+      <svg class="mascot mascot-idle" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="100" cy="150" rx="34" ry="10" fill="#000" opacity="0.08"/>
+        <path d="M100 20 C60 20 45 70 45 115 C45 155 68 180 100 180 C132 180 155 155 155 115 C155 70 140 20 100 20 Z" fill="#5a9e3d"/>
+        <path d="M100 20 C75 20 62 55 58 90 C80 78 120 78 142 90 C138 55 125 20 100 20 Z" fill="#3f7a2b"/>
+        <ellipse cx="100" cy="118" rx="46" ry="52" fill="#c9a15f"/>
+        <ellipse cx="100" cy="118" rx="46" ry="52" fill="#a97f45" opacity="0.25"/>
+        <line x1="45" y1="115" x2="18" y2="128" stroke="#5a9e3d" stroke-width="8" stroke-linecap="round"/>
+        <line x1="155" y1="115" x2="182" y2="128" stroke="#5a9e3d" stroke-width="8" stroke-linecap="round"/>
+        <circle cx="82" cy="112" r="11" fill="#fff"/>
+        <circle cx="118" cy="112" r="11" fill="#fff"/>
+        <circle cx="84" cy="114" r="5.5" fill="#3c3c3c"/>
+        <circle cx="120" cy="114" r="5.5" fill="#3c3c3c"/>
+        <circle cx="70" cy="128" r="7" fill="#ff9fa8" opacity="0.6"/>
+        <circle cx="130" cy="128" r="7" fill="#ff9fa8" opacity="0.6"/>
+        <path d="M84 138 Q100 150 116 138" stroke="#3c3c3c" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </svg>
+
       <h1>Van elk recept een veganistisch meesterwerk</h1>
       <p class="subtitle">Plak je recept en Veganiseer bedenkt inventieve vervangingen: geen weglaten, maar herontwerpen.</p>
 
@@ -70,9 +97,21 @@ Bereiding:
     <div class="container loading-container">
       <div class="loader">
         <div class="loader-ring"></div>
-        <span class="loader-emoji">🌿</span>
+        <svg class="mascot mascot-thinking" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M100 20 C60 20 45 70 45 115 C45 155 68 180 100 180 C132 180 155 155 155 115 C155 70 140 20 100 20 Z" fill="#5a9e3d"/>
+          <path d="M100 20 C75 20 62 55 58 90 C80 78 120 78 142 90 C138 55 125 20 100 20 Z" fill="#3f7a2b"/>
+          <ellipse cx="100" cy="118" rx="46" ry="52" fill="#c9a15f"/>
+          <ellipse cx="100" cy="118" rx="46" ry="52" fill="#a97f45" opacity="0.25"/>
+          <path d="M155 115 Q188 100 178 78" stroke="#5a9e3d" stroke-width="8" fill="none" stroke-linecap="round"/>
+          <line x1="45" y1="115" x2="18" y2="128" stroke="#5a9e3d" stroke-width="8" stroke-linecap="round"/>
+          <circle cx="78" cy="108" r="10" fill="#fff"/>
+          <circle cx="114" cy="108" r="10" fill="#fff"/>
+          <circle cx="74" cy="103" r="5" fill="#3c3c3c"/>
+          <circle cx="110" cy="103" r="5" fill="#3c3c3c"/>
+          <path d="M88 136 Q100 132 112 136" stroke="#3c3c3c" stroke-width="4" fill="none" stroke-linecap="round"/>
+        </svg>
       </div>
-      <p id="loading-text" class="loading-text">Recept wordt geanalyseerd...</p>
+      <p id="loading-text" class="loading-text">Recept wordt omgetoverd...</p>
     </div>
   </section>
 
@@ -80,9 +119,29 @@ Bereiding:
   <section id="screen-result" class="screen">
     <div class="container container-wide">
       <div class="result-header">
-        <h1 id="result-title">Pasta Carbonara — Veganistisch</h1>
+        <div class="result-header-title">
+          <svg class="mascot mascot-happy" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M100 20 C60 20 45 70 45 115 C45 155 68 180 100 180 C132 180 155 155 155 115 C155 70 140 20 100 20 Z" fill="#5a9e3d"/>
+            <path d="M100 20 C75 20 62 55 58 90 C80 78 120 78 142 90 C138 55 125 20 100 20 Z" fill="#3f7a2b"/>
+            <ellipse cx="100" cy="118" rx="46" ry="52" fill="#c9a15f"/>
+            <ellipse cx="100" cy="118" rx="46" ry="52" fill="#a97f45" opacity="0.25"/>
+            <line x1="45" y1="115" x2="12" y2="85" stroke="#5a9e3d" stroke-width="8" stroke-linecap="round"/>
+            <line x1="155" y1="115" x2="188" y2="85" stroke="#5a9e3d" stroke-width="8" stroke-linecap="round"/>
+            <path d="M78 108 Q82 98 90 106" stroke="#3c3c3c" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <path d="M110 106 Q118 98 122 108" stroke="#3c3c3c" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <circle cx="70" cy="128" r="7" fill="#ff9fa8" opacity="0.6"/>
+            <circle cx="130" cy="128" r="7" fill="#ff9fa8" opacity="0.6"/>
+            <path d="M78 132 Q100 156 122 132" stroke="#3c3c3c" stroke-width="5" fill="none" stroke-linecap="round"/>
+          </svg>
+          <div>
+            <h1 id="result-title">Pasta Carbonara — Veganistisch</h1>
+            <p id="result-microcopy" class="result-microcopy">Nice! Weer een recept veganer gemaakt 🌱</p>
+          </div>
+        </div>
         <button id="restart-btn" class="btn-text">← Nieuw recept</button>
       </div>
+
+      <div id="gamification-summary" class="gamification-summary"></div>
 
       <div class="compare-grid">
         <div class="recipe-col original">
@@ -176,6 +235,8 @@ Bereiding:
 <footer class="site-footer">
   <p>Veganiseer · gemaakt met 🌱</p>
 </footer>
+
+<div id="confetti-layer" class="confetti-layer" aria-hidden="true"></div>
 
 <script src="app.js"></script>
 </body>

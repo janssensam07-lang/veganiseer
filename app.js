@@ -1,10 +1,104 @@
 const LOADING_MESSAGES = [
-  "Recept wordt geanalyseerd...",
+  "Recept wordt omgetoverd...",
   "Ingrediënten worden herkend...",
-  "Vervangingen worden bedacht...",
-  "Smaken worden afgewogen...",
+  "Slimme swaps worden bedacht...",
+  "Smaken worden gebalanceerd...",
   "Veganistische versie wordt samengesteld..."
 ];
+
+// ===== Gamification (localStorage) =====
+const GAMIFICATION_KEY = "veganiseer_stats";
+const XP_PER_RECIPE = 10;
+
+const BADGES = [
+  { id: "5_recepten", icon: "🌟", label: "5 recepten geveganiseerd", check: (s) => s.recipesCount >= 5 },
+  { id: "10kg_co2", icon: "🌍", label: "10 kg CO2 bespaard", check: (s) => s.totalCo2SavedKg >= 10 },
+];
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function loadStats() {
+  const defaults = { recipesCount: 0, xp: 0, totalCo2SavedKg: 0, streak: 0, lastVeganizedDate: null, unlockedBadges: [] };
+  try {
+    const raw = localStorage.getItem(GAMIFICATION_KEY);
+    return raw ? { ...defaults, ...JSON.parse(raw) } : defaults;
+  } catch {
+    return defaults;
+  }
+}
+
+function saveStats(stats) {
+  try {
+    localStorage.setItem(GAMIFICATION_KEY, JSON.stringify(stats));
+  } catch {
+    // localStorage niet beschikbaar (privénavigatie e.d.) — sla over.
+  }
+}
+
+function registerVeganizedRecipe(co2SavingsKg) {
+  const stats = loadStats();
+  const today = todayStr();
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+
+  if (stats.lastVeganizedDate === yesterday) {
+    stats.streak += 1;
+  } else if (stats.lastVeganizedDate !== today) {
+    stats.streak = 1;
+  }
+
+  stats.recipesCount += 1;
+  stats.xp += XP_PER_RECIPE;
+  stats.totalCo2SavedKg += Math.max(0, co2SavingsKg || 0);
+  stats.lastVeganizedDate = today;
+
+  const newBadges = BADGES.filter((b) => !stats.unlockedBadges.includes(b.id) && b.check(stats));
+  stats.unlockedBadges = [...stats.unlockedBadges, ...newBadges.map((b) => b.id)];
+
+  saveStats(stats);
+  return { stats, newBadges };
+}
+
+function renderHeaderStats() {
+  const stats = loadStats();
+  document.getElementById("stat-streak").textContent = stats.streak;
+  document.getElementById("stat-xp").textContent = stats.xp;
+}
+
+function renderGamificationSummary(xpGained, stats, newBadges) {
+  const el = document.getElementById("gamification-summary");
+  el.innerHTML = "";
+
+  const chips = [
+    { className: "xp-chip", html: `⭐ +${xpGained} XP` },
+    { className: "streak-chip", html: `🔥 ${stats.streak} dag${stats.streak === 1 ? "" : "en"} op rij` },
+  ];
+  newBadges.forEach((b) => chips.push({ className: "badge-chip", html: `${b.icon} Nieuwe badge: ${b.label}` }));
+
+  chips.forEach((chip) => {
+    const span = document.createElement("span");
+    span.className = `gami-chip ${chip.className}`;
+    span.innerHTML = chip.html;
+    el.appendChild(span);
+  });
+}
+
+function launchConfetti() {
+  const layer = document.getElementById("confetti-layer");
+  const colors = ["#58cc02", "#ffc800", "#1cb0f6", "#ff4b4b", "#ce82ff"];
+
+  for (let i = 0; i < 40; i++) {
+    const piece = document.createElement("div");
+    piece.className = "confetti-piece";
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDuration = `${1.8 + Math.random() * 1.4}s`;
+    piece.style.animationDelay = `${Math.random() * 0.3}s`;
+    layer.appendChild(piece);
+    setTimeout(() => piece.remove(), 3500);
+  }
+}
 
 // ===== Screen navigation =====
 function showScreen(id) {
@@ -74,6 +168,11 @@ function renderResult(data) {
 
   renderMacros(data.macros);
   renderCo2(data.co2);
+
+  const { stats, newBadges } = registerVeganizedRecipe(data.co2?.savingsKg);
+  renderGamificationSummary(XP_PER_RECIPE, stats, newBadges);
+  renderHeaderStats();
+  launchConfetti();
 }
 
 function renderMacros(macros) {
@@ -245,3 +344,5 @@ document.getElementById("photo-input").addEventListener("change", (event) => {
 document.getElementById("restart-btn").addEventListener("click", () => {
   showScreen("screen-input");
 });
+
+renderHeaderStats();
