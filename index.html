@@ -111,26 +111,26 @@ Bereiding:
 
       <div class="impact-section">
         <h2>Ecologische impact</h2>
-        <p class="impact-note">Placeholder-vergelijking — wordt in een latere fase gevuld met echte CO2-data.</p>
+        <p class="impact-note">Indicatieve schatting per portie, gebaseerd op gemiddelde CO2-cijfers per ingrediënt (Poore &amp; Nemecek, 2018 / Our World in Data).</p>
         <div class="impact-bars">
           <div class="impact-row">
             <div class="impact-label">Origineel</div>
             <div class="impact-bar-track">
-              <div class="impact-bar original-bar" style="width: 100%">
-                <span class="impact-value">6,8 kg CO₂e</span>
+              <div id="impact-bar-original" class="impact-bar original-bar" style="width: 100%">
+                <span id="impact-value-original" class="impact-value">– kg CO₂e</span>
               </div>
             </div>
           </div>
           <div class="impact-row">
             <div class="impact-label">Veganistisch</div>
             <div class="impact-bar-track">
-              <div class="impact-bar vegan-bar" style="width: 26%">
-                <span class="impact-value">1,8 kg CO₂e</span>
+              <div id="impact-bar-vegan" class="impact-bar vegan-bar" style="width: 0%">
+                <span id="impact-value-vegan" class="impact-value">– kg CO₂e</span>
               </div>
             </div>
           </div>
         </div>
-        <p class="impact-savings">🌍 Je bespaart <strong>5,0 kg CO₂e</strong> per portie — vergelijkbaar met <strong>25 km</strong> autorijden.</p>
+        <p id="impact-savings" class="impact-savings"></p>
       </div>
     </div>
   </section>
@@ -138,7 +138,7 @@ Bereiding:
 </main>
 
 <footer class="site-footer">
-  <p>Veganiseer · gemaakt met 🌱 · fase 1 (statische demo)</p>
+  <p>Veganiseer · gemaakt met 🌱</p>
 </footer>
 
 <script src="app.js"></script>

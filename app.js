@@ -71,6 +71,29 @@ function renderResult(data) {
     `;
     replacementsEl.appendChild(card);
   });
+
+  renderCo2(data.co2);
+}
+
+function formatKg(kg) {
+  return kg.toLocaleString("nl-NL", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+}
+
+function renderCo2(co2) {
+  if (!co2) return;
+
+  const maxKg = Math.max(co2.originalKg, co2.veganKg, 0.1);
+  document.getElementById("impact-bar-original").style.width = "100%";
+  document.getElementById("impact-bar-vegan").style.width = `${Math.max((co2.veganKg / maxKg) * 100, 4)}%`;
+  document.getElementById("impact-value-original").textContent = `${formatKg(co2.originalKg)} kg CO₂e`;
+  document.getElementById("impact-value-vegan").textContent = `${formatKg(co2.veganKg)} kg CO₂e`;
+
+  const savingsEl = document.getElementById("impact-savings");
+  if (co2.savingsKg > 0) {
+    savingsEl.innerHTML = `🌍 Je bespaart <strong>${formatKg(co2.savingsKg)} kg CO₂e</strong> per portie — vergelijkbaar met <strong>${co2.savingsKm} km</strong> autorijden.`;
+  } else {
+    savingsEl.textContent = "🌍 Voor dit recept is er nauwelijks CO2-verschil geschat.";
+  }
 }
 
 // ===== Flow: input -> loading -> result =====

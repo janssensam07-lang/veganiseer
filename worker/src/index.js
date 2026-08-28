@@ -1,3 +1,5 @@
+import { CO2_FACTORS, computeCo2 } from "./co2-data.js";
+
 const ALLOWED_ORIGINS = new Set(["https://janssensam07-lang.github.io"]);
 
 function corsHeaders(origin) {
@@ -26,17 +28,22 @@ inventieve, culinair onderbouwde vervanging die eenzelfde smaak, textuur of mond
 (bijvoorbeeld eidooier/Parmezaan in carbonara vervangen door een cashew-emulsie met
 nutritionele gist).
 
+Voor ELK ingrediënt (zowel origineel als veganistisch) schat je ook het gewicht in gram voor
+de gegeven portiegrootte (of 1 portie als dat niet duidelijk is), en ken je exact één
+CO2-categorie toe uit deze vaste lijst: ${Object.keys(CO2_FACTORS).join(", ")}.
+Kies de categorie die het ingrediënt het beste dekt; gebruik "other" alleen als niets past.
+
 Antwoord UITSLUITEND met geldige JSON, exact volgens dit schema, zonder markdown-codeblok
 en zonder tekst erbuiten:
 
 {
   "name": "Naam van het gerecht",
   "original": {
-    "ingredients": ["ingrediënt 1", "ingrediënt 2"],
+    "ingredients": [{"text": "ingrediënt", "grams": 200, "co2Category": "pork"}],
     "steps": ["stap 1", "stap 2"]
   },
   "vegan": {
-    "ingredients": [{"text": "ingrediënt", "swapped": true of false}],
+    "ingredients": [{"text": "ingrediënt", "swapped": true of false, "grams": 200, "co2Category": "tempeh"}],
     "steps": ["stap 1", "stap 2"]
   },
   "replacements": [
@@ -81,12 +88,14 @@ async function handleVeganize(request, env, origin) {
 
   const raw = typeof aiResponse.response === "string" ? aiResponse.response : JSON.stringify(aiResponse.response);
   const result = extractJson(raw || "");
-  if (!result) {
+  if (!result || !result.original?.ingredients || !result.vegan?.ingredients) {
     return withCors(
       Response.json({ error: "Kon geen geldig recept genereren, probeer het opnieuw" }, { status: 502 }),
       origin
     );
   }
+
+  result.co2 = computeCo2(result.original.ingredients, result.vegan.ingredients);
 
   return withCors(Response.json(result), origin);
 }
