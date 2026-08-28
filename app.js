@@ -72,7 +72,25 @@ function renderResult(data) {
     replacementsEl.appendChild(card);
   });
 
+  renderMacros(data.macros);
   renderCo2(data.co2);
+}
+
+function renderMacros(macros) {
+  if (!macros) return;
+
+  const setCell = (id, value, unit) => {
+    document.getElementById(id).textContent = `${Math.round(value)}${unit}`;
+  };
+
+  setCell("macro-kcal-original", macros.original.kcal, " kcal");
+  setCell("macro-kcal-vegan", macros.vegan.kcal, " kcal");
+  setCell("macro-protein-original", macros.original.protein_g, " g");
+  setCell("macro-protein-vegan", macros.vegan.protein_g, " g");
+  setCell("macro-fat-original", macros.original.fat_g, " g");
+  setCell("macro-fat-vegan", macros.vegan.fat_g, " g");
+  setCell("macro-carbs-original", macros.original.carbs_g, " g");
+  setCell("macro-carbs-vegan", macros.vegan.carbs_g, " g");
 }
 
 function formatKg(kg) {

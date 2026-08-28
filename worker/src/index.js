@@ -65,10 +65,12 @@ als boter, met een vergelijkbare rijkheid."
 De "explanation" bij elke vervanging moet de functionele logica benoemen (welke rol(len)
 behouden blijven), niet alleen "dit is een goede vervanger".
 
-Voor ELK ingrediënt (zowel origineel als veganistisch) schat je ook het gewicht in gram voor
-de gegeven portiegrootte (of 1 portie als dat niet duidelijk is), en ken je exact één
-CO2-categorie toe uit deze vaste lijst: ${Object.keys(CO2_FACTORS).join(", ")}.
-Kies de categorie die het ingrediënt het beste dekt; gebruik "other" alleen als niets past.
+Voor ELK ingrediënt (zowel origineel als veganistisch) schat je ook:
+- het gewicht in gram voor de gegeven portiegrootte (of 1 portie als dat niet duidelijk is);
+- exact één CO2-categorie uit deze vaste lijst: ${Object.keys(CO2_FACTORS).join(", ")}
+  (kies de categorie die het ingrediënt het beste dekt; gebruik "other" alleen als niets past);
+- de voedingswaarden van DAT ingrediënt in DIE hoeveelheid: calorieën (kcal), eiwit (gram),
+  vet (gram) en koolhydraten (gram), gebaseerd op algemene voedingskennis.
 
 Antwoord UITSLUITEND met geldige JSON, exact volgens dit schema, zonder markdown-codeblok
 en zonder tekst erbuiten:
@@ -76,11 +78,11 @@ en zonder tekst erbuiten:
 {
   "name": "Naam van het gerecht",
   "original": {
-    "ingredients": [{"text": "ingrediënt", "grams": 200, "co2Category": "pork"}],
+    "ingredients": [{"text": "ingrediënt", "grams": 200, "co2Category": "pork", "kcal": 250, "protein_g": 20, "fat_g": 18, "carbs_g": 0}],
     "steps": ["stap 1", "stap 2"]
   },
   "vegan": {
-    "ingredients": [{"text": "ingrediënt", "swapped": true of false, "grams": 200, "co2Category": "tempeh"}],
+    "ingredients": [{"text": "ingrediënt", "swapped": true of false, "grams": 200, "co2Category": "tempeh", "kcal": 250, "protein_g": 20, "fat_g": 18, "carbs_g": 0}],
     "steps": ["stap 1", "stap 2"]
   },
   "replacements": [
@@ -90,6 +92,18 @@ en zonder tekst erbuiten:
 
 "swapped": true voor elk vegan ingrediënt dat een vervanging is van een dierlijk ingrediënt,
 false voor ingrediënten die ongewijzigd blijven.`;
+
+function computeMacros(ingredients) {
+  return ingredients.reduce(
+    (totals, item) => ({
+      kcal: totals.kcal + (Number(item.kcal) || 0),
+      protein_g: totals.protein_g + (Number(item.protein_g) || 0),
+      fat_g: totals.fat_g + (Number(item.fat_g) || 0),
+      carbs_g: totals.carbs_g + (Number(item.carbs_g) || 0),
+    }),
+    { kcal: 0, protein_g: 0, fat_g: 0, carbs_g: 0 }
+  );
+}
 
 function extractJson(text) {
   const start = text.indexOf("{");
@@ -118,6 +132,10 @@ async function veganizeRecipeText(recipeText, env) {
   }
 
   result.co2 = computeCo2(result.original.ingredients, result.vegan.ingredients);
+  result.macros = {
+    original: computeMacros(result.original.ingredients),
+    vegan: computeMacros(result.vegan.ingredients),
+  };
   return result;
 }
 

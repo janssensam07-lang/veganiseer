@@ -374,12 +374,48 @@ p { margin: 0 0 1em; }
   font-weight: 600;
 }
 
-.replacements-section, .impact-section {
+.replacements-section, .macros-section, .impact-section {
   margin-top: 40px;
   background: var(--white);
   border-radius: var(--radius);
   padding: 28px;
   box-shadow: var(--shadow);
+}
+
+.macros-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 0.95rem;
+}
+
+.macros-table th, .macros-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.macros-table th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.macros-table th:nth-child(2), .macros-table th:nth-child(3),
+.macros-table td:nth-child(2), .macros-table td:nth-child(3) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.macros-table th:nth-child(3), .macros-table td:nth-child(3) {
+  color: var(--green-deep);
+  font-weight: 600;
+}
+
+.macros-table tr:last-child td {
+  border-bottom: none;
 }
 
 .replacements-list {
