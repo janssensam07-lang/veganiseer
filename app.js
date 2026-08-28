@@ -109,22 +109,15 @@ function hideInputError() {
   document.getElementById("input-error").hidden = true;
 }
 
-async function runVeganize(recipeText) {
-  hideInputError();
-
-  if (!recipeText.trim()) {
-    showInputError("Plak eerst een recept voordat je het veganiseert.");
-    return;
-  }
-
+async function callVeganizeApi(path, body, errorMessage) {
   showScreen("screen-loading");
   startLoadingCycle();
 
   try {
-    const res = await fetch(`${WORKER_URL}/veganize`, {
+    const res = await fetch(`${WORKER_URL}${path}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ recipeText }),
+      body: JSON.stringify(body),
     });
 
     if (!res.ok) {
@@ -138,9 +131,29 @@ async function runVeganize(recipeText) {
   } catch (err) {
     stopLoadingCycle();
     showScreen("screen-input");
-    showInputError("Het veganiseren is mislukt. Probeer het straks nog eens.");
+    showInputError(errorMessage);
     console.error(err);
   }
+}
+
+function runVeganize(recipeText) {
+  hideInputError();
+
+  if (!recipeText.trim()) {
+    showInputError("Plak eerst een recept voordat je het veganiseert.");
+    return;
+  }
+
+  callVeganizeApi("/veganize", { recipeText }, "Het veganiseren is mislukt. Probeer het straks nog eens.");
+}
+
+function runVeganizePhoto(imageDataUrl) {
+  hideInputError();
+  callVeganizeApi(
+    "/veganize-photo",
+    { imageDataUrl },
+    "Kon geen recept herkennen op de foto. Probeer een duidelijkere foto of plak de tekst."
+  );
 }
 
 // ===== Event wiring =====
@@ -166,6 +179,20 @@ Bereiding:
 3. Meng eierdooiers met Parmezaan.
 4. Combineer alles tot een romige saus.`;
   runVeganize(textarea.value);
+});
+
+document.getElementById("photo-btn").addEventListener("click", () => {
+  document.getElementById("photo-input").click();
+});
+
+document.getElementById("photo-input").addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => runVeganizePhoto(reader.result);
+  reader.readAsDataURL(file);
+  event.target.value = "";
 });
 
 document.getElementById("restart-btn").addEventListener("click", () => {

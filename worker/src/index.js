@@ -65,6 +65,25 @@ function extractJson(text) {
   }
 }
 
+async function veganizeRecipeText(recipeText, env) {
+  const aiResponse = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", {
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: recipeText },
+    ],
+    max_tokens: 2048,
+  });
+
+  const raw = typeof aiResponse.response === "string" ? aiResponse.response : JSON.stringify(aiResponse.response);
+  const result = extractJson(raw || "");
+  if (!result || !result.original?.ingredients || !result.vegan?.ingredients) {
+    return null;
+  }
+
+  result.co2 = computeCo2(result.original.ingredients, result.vegan.ingredients);
+  return result;
+}
+
 async function handleVeganize(request, env, origin) {
   let body;
   try {
@@ -78,24 +97,61 @@ async function handleVeganize(request, env, origin) {
     return withCors(Response.json({ error: "recipeText is verplicht" }, { status: 400 }), origin);
   }
 
-  const aiResponse = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", {
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: recipeText },
-    ],
-    max_tokens: 2048,
-  });
-
-  const raw = typeof aiResponse.response === "string" ? aiResponse.response : JSON.stringify(aiResponse.response);
-  const result = extractJson(raw || "");
-  if (!result || !result.original?.ingredients || !result.vegan?.ingredients) {
+  const result = await veganizeRecipeText(recipeText, env);
+  if (!result) {
     return withCors(
       Response.json({ error: "Kon geen geldig recept genereren, probeer het opnieuw" }, { status: 502 }),
       origin
     );
   }
 
-  result.co2 = computeCo2(result.original.ingredients, result.vegan.ingredients);
+  return withCors(Response.json(result), origin);
+}
+
+async function handleVeganizePhoto(request, env, origin) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return withCors(Response.json({ error: "Ongeldige request-body" }, { status: 400 }), origin);
+  }
+
+  const imageDataUrl = body.imageDataUrl || "";
+  if (!imageDataUrl.startsWith("data:image/")) {
+    return withCors(Response.json({ error: "imageDataUrl is verplicht" }, { status: 400 }), origin);
+  }
+
+  const visionResponse = await env.AI.run("@cf/google/gemma-4-26b-a4b-it", {
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: "Transcribeer het recept op deze foto exact: naam van het gerecht, alle ingrediënten met hoeveelheden, en alle bereidingsstappen. Geef uitsluitend de platte tekst terug, geen opmaak en geen extra commentaar.",
+          },
+          { type: "image_url", image_url: { url: imageDataUrl } },
+        ],
+      },
+    ],
+    max_tokens: 1024,
+  });
+
+  const recipeText = (visionResponse.choices?.[0]?.message?.content || visionResponse.response || "").trim();
+  if (!recipeText) {
+    return withCors(
+      Response.json({ error: "Kon geen recept herkennen op de foto, probeer een duidelijkere foto" }, { status: 502 }),
+      origin
+    );
+  }
+
+  const result = await veganizeRecipeText(recipeText, env);
+  if (!result) {
+    return withCors(
+      Response.json({ error: "Kon geen geldig recept genereren, probeer het opnieuw" }, { status: 502 }),
+      origin
+    );
+  }
 
   return withCors(Response.json(result), origin);
 }
@@ -115,6 +171,10 @@ export default {
 
     if (url.pathname === "/veganize" && request.method === "POST") {
       return handleVeganize(request, env, origin);
+    }
+
+    if (url.pathname === "/veganize-photo" && request.method === "POST") {
+      return handleVeganizePhoto(request, env, origin);
     }
 
     return withCors(new Response("Not found", { status: 404 }), origin);
