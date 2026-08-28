@@ -1,0 +1,51 @@
+{
+  "umami_savory_fat": [
+    "cashewroom (geweekte cashewnoten gepureerd met water) + witte miso + nutritionele gist",
+    "gerookte tofu",
+    "gefermenteerde sojaboon-pasta (miso/doenjang)"
+  ],
+  "smoky_bacon_notes": [
+    "gerookte paprikapoeder + gebakken shiitake",
+    "gerookte tofu, in reepjes gebakken",
+    "liquid smoke + gemarineerde tempeh"
+  ],
+  "egg_binding_richness": [
+    "aquafaba (kikkererwtenwater)",
+    "gemalen lijnzaad + water (1:3, laten gelen)",
+    "cashew-emulsie (geweekte cashewnoten gepureerd)",
+    "zijden tofu, gepureerd"
+  ],
+  "cheese_hard_umami": [
+    "cashewnoten + nutritionele gist + witte miso, geroosterd of gedroogd",
+    "veganistische Parmezaan op cashew- of sojabasis"
+  ],
+  "cheese_soft_creamy": [
+    "zijden tofu + citroensap + nutritionele gist, gepureerd",
+    "cashewroom met een scheutje azijn"
+  ],
+  "meat_chewy_protein_umami": [
+    "tempeh, gemarineerd en gebakken",
+    "seitan (tarweglutenbasis)",
+    "jackfruit voor een mals, getrokken textuur"
+  ],
+  "poultry_light_protein": [
+    "tofu, geperst en gemarineerd",
+    "sojafilet of seitan met milde kruiden"
+  ],
+  "fish_briny_umami": [
+    "gemarineerde tofu met nori (zeewier) en citroen",
+    "hart van palm of jackfruit voor een schelpdier-achtige textuur"
+  ],
+  "dairy_milk_cream_richness": [
+    "ongezoete plantaardige room (haver-, soja- of cashewroom)",
+    "zelfgemaakte cashewroom (geweekte cashewnoten gepureerd met water)"
+  ],
+  "butter_fat_browning": [
+    "plantaardige margarine of boter",
+    "kokosolie voor extra browning bij hoge temperatuur"
+  ],
+  "honey_sweetness": [
+    "agavesiroop",
+    "ahornsiroop"
+  ]
+}
