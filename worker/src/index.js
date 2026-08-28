@@ -1,26 +1,113 @@
-const ALLOWED_ORIGIN = "https://janssensam07-lang.github.io";
+const ALLOWED_ORIGINS = new Set(["https://janssensam07-lang.github.io"]);
 
-function withCors(response) {
-  response.headers.set("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
-  response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+function corsHeaders(origin) {
+  const allowOrigin =
+    ALLOWED_ORIGINS.has(origin) || (origin && origin.startsWith("http://localhost"))
+      ? origin
+      : "null";
+  return {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
+}
+
+function withCors(response, origin) {
+  const headers = corsHeaders(origin);
+  for (const [key, value] of Object.entries(headers)) {
+    response.headers.set(key, value);
+  }
   return response;
 }
 
+const SYSTEM_PROMPT = `Je bent een culinaire expert gespecialiseerd in het veganistisch maken van recepten.
+Je vervangt dierlijke ingrediënten nooit door ze simpelweg weg te laten, maar bedenkt een
+inventieve, culinair onderbouwde vervanging die eenzelfde smaak, textuur of mondgevoel geeft
+(bijvoorbeeld eidooier/Parmezaan in carbonara vervangen door een cashew-emulsie met
+nutritionele gist).
+
+Antwoord UITSLUITEND met geldige JSON, exact volgens dit schema, zonder markdown-codeblok
+en zonder tekst erbuiten:
+
+{
+  "name": "Naam van het gerecht",
+  "original": {
+    "ingredients": ["ingrediënt 1", "ingrediënt 2"],
+    "steps": ["stap 1", "stap 2"]
+  },
+  "vegan": {
+    "ingredients": [{"text": "ingrediënt", "swapped": true of false}],
+    "steps": ["stap 1", "stap 2"]
+  },
+  "replacements": [
+    {"icon": "een enkele passende emoji", "title": "Origineel ingrediënt → vervanging", "explanation": "korte culinaire uitleg waarom dit werkt"}
+  ]
+}
+
+"swapped": true voor elk vegan ingrediënt dat een vervanging is van een dierlijk ingrediënt,
+false voor ingrediënten die ongewijzigd blijven.`;
+
+function extractJson(text) {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start === -1 || end === -1 || end < start) return null;
+  try {
+    return JSON.parse(text.slice(start, end + 1));
+  } catch {
+    return null;
+  }
+}
+
+async function handleVeganize(request, env, origin) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return withCors(Response.json({ error: "Ongeldige request-body" }, { status: 400 }), origin);
+  }
+
+  const recipeText = (body.recipeText || "").trim();
+  if (!recipeText) {
+    return withCors(Response.json({ error: "recipeText is verplicht" }, { status: 400 }), origin);
+  }
+
+  const aiResponse = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", {
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: recipeText },
+    ],
+    max_tokens: 2048,
+  });
+
+  const raw = typeof aiResponse.response === "string" ? aiResponse.response : JSON.stringify(aiResponse.response);
+  const result = extractJson(raw || "");
+  if (!result) {
+    return withCors(
+      Response.json({ error: "Kon geen geldig recept genereren, probeer het opnieuw" }, { status: 502 }),
+      origin
+    );
+  }
+
+  return withCors(Response.json(result), origin);
+}
+
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     const url = new URL(request.url);
+    const origin = request.headers.get("Origin");
 
     if (request.method === "OPTIONS") {
-      return withCors(new Response(null, { status: 204 }));
+      return withCors(new Response(null, { status: 204 }), origin);
     }
 
-    // Health-check om te bevestigen dat de Worker gekoppeld en deploybaar is.
-    // De echte veganiseer-route (Claude API-aanroep) komt in fase 4.
     if (url.pathname === "/ping") {
-      return withCors(Response.json({ ok: true, service: "veganiseer-worker" }));
+      return withCors(Response.json({ ok: true, service: "veganiseer-worker" }), origin);
     }
 
-    return withCors(new Response("Not found", { status: 404 }));
+    if (url.pathname === "/veganize" && request.method === "POST") {
+      return handleVeganize(request, env, origin);
+    }
+
+    return withCors(new Response("Not found", { status: 404 }), origin);
   },
 };

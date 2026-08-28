@@ -1,65 +1,3 @@
-// ===== Dummy data: Pasta Carbonara =====
-const DUMMY_RESULT = {
-  name: "Pasta Carbonara",
-
-  original: {
-    ingredients: [
-      "400g spaghetti",
-      "200g pancetta",
-      "4 eierdooiers",
-      "100g Parmezaanse kaas, geraspt",
-      "Versgemalen zwarte peper",
-      "Zout"
-    ],
-    steps: [
-      "Kook de spaghetti in ruim gezouten water al dente.",
-      "Bak de pancetta in een droge pan tot krokant en goudbruin.",
-      "Klop de eierdooiers los met de geraspte Parmezaanse kaas en veel zwarte peper.",
-      "Meng de hete, uitgelekte pasta direct met de pancetta en het vet uit de pan.",
-      "Haal van het vuur en roer snel het eiermengsel erdoor tot een romige saus ontstaat.",
-      "Serveer direct met extra Parmezaan en peper."
-    ]
-  },
-
-  vegan: {
-    ingredients: [
-      "400g spaghetti",
-      { text: "200g gerookte tempeh of shiitake \"pancetta\"", swapped: true },
-      { text: "150g geweekte cashewnoten + 2 el nutritionele gist", swapped: true },
-      { text: "40g veganistische Parmezaan (of extra nutritionele gist)", swapped: true },
-      "Versgemalen zwarte peper",
-      "Zout",
-      "Scheutje pastawater"
-    ],
-    steps: [
-      "Kook de spaghetti in ruim gezouten water al dente, bewaar een kopje pastawater.",
-      "Bak de in reepjes gesneden tempeh of shiitake krokant met een beetje rooksmaak (paprikapoeder of gerookt zout).",
-      "Mix de geweekte cashewnoten met nutritionele gist, wat pastawater en peper tot een gladde, romige emulsie.",
-      "Meng de hete, uitgelekte pasta direct met de tempeh/shiitake.",
-      "Haal van het vuur en roer de cashew-emulsie erdoor tot een romige saus ontstaat, verdun met pastawater indien nodig.",
-      "Serveer direct met veganistische Parmezaan en extra peper."
-    ]
-  },
-
-  replacements: [
-    {
-      icon: "🥚",
-      title: "Eierdooiers → cashew-emulsie",
-      explanation: "Geweekte cashewnoten geven, gemixt tot een gladde pasta, dezelfde romige mondgevoel als eidooier. Nutritionele gist voegt een hartige, licht kaasachtige umami-smaak toe die de rijkheid van het ei benadert."
-    },
-    {
-      icon: "🧀",
-      title: "Parmezaanse kaas → veganistische Parmezaan / nutritionele gist",
-      explanation: "Nutritionele gist heeft van nature een nootachtige, umami-rijke smaak door de gefermenteerde gist-eiwitten, wat het hartige karakter van belegen kaas goed benadert zonder zuivel."
-    },
-    {
-      icon: "🥓",
-      title: "Pancetta → gerookte tempeh of shiitake",
-      explanation: "Tempeh en shiitake nemen rooksmaken goed op en krijgen bij bakken een vergelijkbare krokante bite als spek. Shiitake bevat bovendien van nature veel glutamaat, wat zorgt voor een vergelijkbare hartige umami-diepte."
-    }
-  ]
-};
-
 const LOADING_MESSAGES = [
   "Recept wordt geanalyseerd...",
   "Ingrediënten worden herkend...",
@@ -136,21 +74,56 @@ function renderResult(data) {
 }
 
 // ===== Flow: input -> loading -> result =====
-function runVeganize() {
+const WORKER_URL = "https://veganiseer-api.veganiseer.workers.dev";
+
+function showInputError(message) {
+  const errorEl = document.getElementById("input-error");
+  errorEl.textContent = message;
+  errorEl.hidden = false;
+}
+
+function hideInputError() {
+  document.getElementById("input-error").hidden = true;
+}
+
+async function runVeganize(recipeText) {
+  hideInputError();
+
+  if (!recipeText.trim()) {
+    showInputError("Plak eerst een recept voordat je het veganiseert.");
+    return;
+  }
+
   showScreen("screen-loading");
   startLoadingCycle();
 
-  // Simuleert verwerkingstijd; in fase 4 vervangen door een echte API-call.
-  setTimeout(() => {
+  try {
+    const res = await fetch(`${WORKER_URL}/veganize`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recipeText }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`API gaf status ${res.status}`);
+    }
+
+    const data = await res.json();
     stopLoadingCycle();
-    renderResult(DUMMY_RESULT);
+    renderResult(data);
     showScreen("screen-result");
-  }, 3200);
+  } catch (err) {
+    stopLoadingCycle();
+    showScreen("screen-input");
+    showInputError("Het veganiseren is mislukt. Probeer het straks nog eens.");
+    console.error(err);
+  }
 }
 
 // ===== Event wiring =====
 document.getElementById("veganize-btn").addEventListener("click", () => {
-  runVeganize();
+  const recipeText = document.getElementById("recipe-input").value;
+  runVeganize(recipeText);
 });
 
 document.getElementById("demo-btn").addEventListener("click", () => {
@@ -169,7 +142,7 @@ Bereiding:
 2. Bak de pancetta krokant.
 3. Meng eierdooiers met Parmezaan.
 4. Combineer alles tot een romige saus.`;
-  runVeganize();
+  runVeganize(textarea.value);
 });
 
 document.getElementById("restart-btn").addEventListener("click", () => {
