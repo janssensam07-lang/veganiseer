@@ -156,6 +156,21 @@ function runVeganizePhoto(imageDataUrl) {
   );
 }
 
+function runVeganizeLink(url) {
+  hideInputError();
+
+  if (!url.trim()) {
+    showInputError("Vul eerst een link naar een recept in.");
+    return;
+  }
+
+  callVeganizeApi(
+    "/veganize-link",
+    { url },
+    "Kon deze link niet verwerken (de site blokkeert mogelijk scraping). Plak de recepttekst zelf."
+  );
+}
+
 // ===== Event wiring =====
 document.getElementById("veganize-btn").addEventListener("click", () => {
   const recipeText = document.getElementById("recipe-input").value;
@@ -179,6 +194,20 @@ Bereiding:
 3. Meng eierdooiers met Parmezaan.
 4. Combineer alles tot een romige saus.`;
   runVeganize(textarea.value);
+});
+
+document.getElementById("link-btn").addEventListener("click", () => {
+  const linkRow = document.getElementById("link-row");
+  linkRow.hidden = !linkRow.hidden;
+  if (!linkRow.hidden) document.getElementById("link-input").focus();
+});
+
+document.getElementById("link-submit-btn").addEventListener("click", () => {
+  runVeganizeLink(document.getElementById("link-input").value);
+});
+
+document.getElementById("link-input").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") runVeganizeLink(event.target.value);
 });
 
 document.getElementById("photo-btn").addEventListener("click", () => {

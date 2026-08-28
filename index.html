@@ -27,12 +27,6 @@
       <p class="subtitle">Plak je recept en Veganiseer bedenkt inventieve vervangingen: geen weglaten, maar herontwerpen.</p>
 
       <div class="input-card">
-        <div class="input-tabs">
-          <button class="tab-btn active" data-tab="text">Tekst</button>
-          <button class="tab-btn" data-tab="link" disabled title="Binnenkort beschikbaar">Link</button>
-          <button class="tab-btn" data-tab="photo" disabled title="Binnenkort beschikbaar">Foto</button>
-        </div>
-
         <textarea id="recipe-input" placeholder="Plak hier je recept, bijvoorbeeld:
 
 Pasta Carbonara
@@ -50,13 +44,18 @@ Bereiding:
 ..."></textarea>
 
         <div class="input-actions">
-          <button class="btn-secondary" disabled title="Binnenkort beschikbaar">
+          <button id="link-btn" class="btn-secondary">
             <span class="btn-icon">🔗</span> Link plakken
           </button>
           <button id="photo-btn" class="btn-secondary">
             <span class="btn-icon">📷</span> Foto uploaden
           </button>
           <input id="photo-input" type="file" accept="image/*" hidden>
+        </div>
+
+        <div id="link-row" class="link-row" hidden>
+          <input id="link-input" type="url" placeholder="https://example.com/mijn-recept" class="link-input">
+          <button id="link-submit-btn" class="btn-secondary">Ophalen</button>
         </div>
 
         <button id="veganize-btn" class="btn-primary">Veganiseer dit recept</button>

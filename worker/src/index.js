@@ -156,6 +156,79 @@ async function handleVeganizePhoto(request, env, origin) {
   return withCors(Response.json(result), origin);
 }
 
+function htmlToText(html) {
+  const withoutNoise = html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<(br|p|li|tr|h[1-6])[^>]*>/gi, "\n");
+
+  return withoutNoise
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n\s*\n+/g, "\n")
+    .trim();
+}
+
+async function handleVeganizeLink(request, env, origin) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return withCors(Response.json({ error: "Ongeldige request-body" }, { status: 400 }), origin);
+  }
+
+  const url = (body.url || "").trim();
+  if (!/^https?:\/\//i.test(url)) {
+    return withCors(Response.json({ error: "url is verplicht" }, { status: 400 }), origin);
+  }
+
+  let pageText;
+  try {
+    const pageResponse = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; VeganiseerBot/1.0; +https://veganiseer-api.veganiseer.workers.dev)",
+      },
+    });
+
+    if (!pageResponse.ok) {
+      throw new Error(`Pagina gaf status ${pageResponse.status}`);
+    }
+
+    const html = await pageResponse.text();
+    pageText = htmlToText(html).slice(0, 12000);
+  } catch {
+    return withCors(
+      Response.json(
+        { error: "Kon deze pagina niet ophalen (mogelijk blokkeert de site scraping). Plak de recepttekst zelf." },
+        { status: 502 }
+      ),
+      origin
+    );
+  }
+
+  if (pageText.length < 100) {
+    return withCors(
+      Response.json(
+        { error: "Kon geen recept op deze pagina herkennen. Plak de recepttekst zelf." },
+        { status: 502 }
+      ),
+      origin
+    );
+  }
+
+  const result = await veganizeRecipeText(pageText, env);
+  if (!result) {
+    return withCors(
+      Response.json({ error: "Kon geen geldig recept genereren, probeer het opnieuw" }, { status: 502 }),
+      origin
+    );
+  }
+
+  return withCors(Response.json(result), origin);
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -175,6 +248,10 @@ export default {
 
     if (url.pathname === "/veganize-photo" && request.method === "POST") {
       return handleVeganizePhoto(request, env, origin);
+    }
+
+    if (url.pathname === "/veganize-link" && request.method === "POST") {
+      return handleVeganizeLink(request, env, origin);
     }
 
     return withCors(new Response("Not found", { status: 404 }), origin);
